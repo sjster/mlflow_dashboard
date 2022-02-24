@@ -3,6 +3,9 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import json
+from datetime import time
+from datetime import datetime
 
 st.set_page_config(layout='wide')
 
@@ -10,6 +13,11 @@ def process_pull_requests(df):
     # Verify data quality for no pull request == '<NA>'
     df['processed_pull_request'] = df['pull_request'].apply(lambda x: 0 if not x else 1)
     return(df)
+
+def get_mlflow_metrics():
+    with open('mlflow_metadata.json','r') as f:
+        m = json.load(f)
+    return(m)
 
 def resample_based_on_label(val):
     vals_over_time = labels_exploded[labels_exploded['labels'] == val]
@@ -27,11 +35,35 @@ def resample_match_label_pattern(val):
 
 AGGREGATION_PERIOD = 'M'
 df = pd.read_json('processed_issues.json')
-st.dataframe(df)
-st.metric('Number of issues',len(df))
-st.subheader('Issue date range ' + str(df['created_at'].min()) + ' ----> ' + str(df['created_at'].max()))
-
 df = process_pull_requests(df)
+mlflow_metrics = get_mlflow_metrics()
+
+st.dataframe(df)
+
+col_metric1, col_metric2, col_metric3, col_metric4 = st.columns([1,1,1,1])
+with col_metric1:
+    st.metric('Number of issues',len(df))
+
+with col_metric2:
+    st.metric('Forks', mlflow_metrics['forks_count'])
+
+with col_metric3:
+    st.metric('Stars',mlflow_metrics['starred'])
+
+with col_metric4:
+    st.metric('Watchers',mlflow_metrics['watchers'])
+
+st.text('Issue date range ' + str(df['created_at'].min()) + ' ----> ' + str(df['created_at'].max()))
+
+date_vals = st.slider(
+     "Date range:",
+     min_value = df['created_at'].min().to_pydatetime(),
+     max_value = df['created_at'].max().to_pydatetime(),
+     value = df['created_at'].max().to_pydatetime(),
+     step = pd.Timedelta(days=15)
+     )
+
+print("Slider values ",date_vals)
 
 col1, col2, col3 = st.columns([1,1,1])
 
