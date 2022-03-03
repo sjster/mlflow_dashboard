@@ -34,5 +34,5 @@ while(not DONE):
         DONE = True
 
 df = pd.DataFrame.from_records(json_list)
-df.to_json("ingestion_issues.json")
+df.to_json("data/ingestion_issues.json")
 print(df)

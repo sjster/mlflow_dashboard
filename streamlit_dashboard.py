@@ -15,12 +15,12 @@ def process_pull_requests(df):
     return(df)
 
 def get_mlflow_metrics():
-    with open('mlflow_metadata.json','r') as f:
+    with open('data/mlflow_metadata.json','r') as f:
         m = json.load(f)
     return(m)
 
 def resample_based_on_label(val):
-    vals_over_time = labels_exploded[labels_exploded['labels'] == val]
+    vals_over_time = labels_exploded[labels_exploded['labels'] == val][['created_at', 'labels']]
     vals_over_time_resampled = vals_over_time.set_index('created_at').resample(AGGREGATION_PERIOD).count()
     vals_over_time_resampled.rename(columns={"labels": val}, inplace=True)
     return(vals_over_time_resampled)
@@ -34,7 +34,7 @@ def resample_match_label_pattern(val):
 
 
 AGGREGATION_PERIOD = 'M'
-df = pd.read_json('processed_issues.json')
+df = pd.read_json('data/processed_issues_entities.json')
 df = process_pull_requests(df)
 mlflow_metrics = get_mlflow_metrics()
 
@@ -70,7 +70,6 @@ with col_metric4:
     st.metric('Watchers',mlflow_metrics['watchers'])
 
 # -------------------- Bugs, issues, enhancements, comments over time ------------------ #
-
 col_bugs, col_issues = st.columns([1,1])
 
 with col_issues:
@@ -84,28 +83,32 @@ with col_issues:
     fig['data'][0].line.color = 'red'
     st.plotly_chart(fig)
 
-labels_exploded = df.explode('labels')[['created_at','labels']]
+labels_exploded = df.explode('labels')[['created_at','labels','entities']]
 with col_bugs:
     fig = px.area(resample_based_on_label('bug'), title="Bug/enhancements/integrations by month")
     fig2 = px.area(resample_based_on_label('enhancement'), title="Bugs over time")
     fig3 = px.area(resample_match_label_pattern('integration'))
+    fig4 = px.area(resample_based_on_label('rn/bug-fix'), title="Bug fixes over time")
     fig.add_trace(fig2['data'][0])
     fig.add_trace(fig3['data'][0])
+    fig.add_trace(fig4['data'][0])
     fig['data'][0].line.color ='red'
     fig['data'][1].line.color = 'green'
+    fig['data'][2].line.color = 'cyan'
     st.plotly_chart(fig)
 
 # --------------------- Pie charts fpr state, locked and PRs --------------------#
+st.subheader('Proportion of issues')
 
 col1, col2, col3 = st.columns([1,1,1])
 
 with col1:
     res = df['state'].value_counts()
-    st.plotly_chart(px.pie(values=res.values, labels=res.index, title='State'))
+    st.plotly_chart(px.pie(values=res.values, labels=res.index, title='State of issues'))
 
 with col2:
     res = df['locked'].value_counts()
-    st.plotly_chart(px.pie(values=res.values, labels=res.index, title='Locked'))
+    st.plotly_chart(px.pie(values=res.values, labels=res.index, title='What % of issues are locked?'))
 
 with col3:
     res = df['processed_pull_request'].value_counts()
@@ -113,6 +116,7 @@ with col3:
 
 # ---------------------- Histogram of issue labels and comments -------------------- #
 
+st.subheader('Distribution of labels and comments')
 col_labels, col_hist = st.columns([1,1])
 
 with col_labels:
@@ -122,3 +126,23 @@ with col_labels:
 with col_hist:
     comments_hist = px.histogram(df, 'comments', title="Distribution of comments")
     st.plotly_chart(comments_hist)
+
+# ----------------------- Entities -------------------- #
+
+st.subheader('Entities from titles - feature requests')
+col_chart, col_dataframe = st.columns([1,1])
+
+with col_chart:
+    entities_count = labels_exploded[labels_exploded['labels'] == 'enhancement'].explode('entities')['entities'].value_counts()
+    st.text('Top 50 entites in feature request titles')
+    st.plotly_chart(px.bar(entities_count[0:50], orientation='h').
+            update_layout(width=800, height=1200, yaxis={'categoryorder':'total ascending'}))
+
+with col_dataframe:
+    st.text('Full list of entity counts from feature request titles (scrollable)')
+    st.dataframe(entities_count, height=1200)
+
+entities_count_top_100 = entities_count.values[0:100].reshape(10,10)
+entities_text_top_100 = entities_count.index.values[0:100].reshape(10,10)
+
+print(entities_text_top_100)

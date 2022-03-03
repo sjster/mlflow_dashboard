@@ -20,5 +20,5 @@ repo_metadata = {'created_at': repo_data['created_at'],
                 'starred': repo_data['stargazers_count'],
                 'watchers': repo_data['subscribers_count']}
 
-with open('mlflow_metadata.json','w') as f:
+with open('data/mlflow_metadata.json','w') as f:
     json.dump(repo_metadata, f)
