@@ -4,35 +4,47 @@ from pprint import pprint
 import json
 
 
-def call_rest_api(i):
-    try:
-        params["page"] = str(i)
-        r = requests.get(query_url, headers=headers, params=params)
-        return(r)
-    except:
-        return(False)
+def get_github_issues():
 
+    def call_rest_api(i):
+        try:
+            params["page"] = str(i)
+            r = requests.get(query_url, headers=headers, params=params)
+            return(r)
+        except:
+            return(False)
 
-query_url = f"https://api.github.com/repos/mlflow/mlflow/issues"
-params = {
-    "page": "1",
-    "per_page": "100"
-}
+    query_url = f"https://api.github.com/repos/mlflow/mlflow/issues"
+    params = {
+        "page": "1",
+        "per_page": "100"
+    }
 
-headers = {"Accept": "application/vnd.github.v3+json"}
-i = 1
-json_list = []
-DONE = False
+    headers = {"Accept": "application/vnd.github.v3+json"}
+    i = 1
+    json_list = []
+    DONE = False
 
-while(not DONE):
-    r = call_rest_api(i)
-    if(r):
-        json_list.extend(r.json())
-        i = i + 1
-        print("Page ",i)
+    while(not DONE):
+        r = call_rest_api(i)
+        if(r):
+            json_list.extend(r.json())
+            i = i + 1
+            print("Page ",i)
+        else:
+            DONE = True
+
+    df = pd.DataFrame.from_records(json_list)
+    if(len(df) != 0):
+        df.to_json("data/ingestion_issues.json")
+        print('Issues returned from data ingestion',len(df))
+        return_val = 0
     else:
-        DONE = True
+        print('No issues returned from ingestion')
+        return_val = 'NO DATA'
 
-df = pd.DataFrame.from_records(json_list)
-df.to_json("data/ingestion_issues.json")
-print(df)
+    return(return_val)
+
+
+if __name__ == '__main__':
+    get_github_issues()
