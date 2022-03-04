@@ -142,7 +142,17 @@ with col_dataframe:
     st.text('Full list of entity counts from feature request titles (scrollable)')
     st.dataframe(entities_count, height=1200)
 
-entities_count_top_100 = entities_count.values[0:100].reshape(10,10)
-entities_text_top_100 = entities_count.index.values[0:100].reshape(10,10)
 
-print(entities_text_top_100)
+from bokeh.plotting import figure
+
+x = [1, 2, 3, 4, 5]
+y = [6, 7, 2, 4, 5]
+
+p = figure(
+     title='simple line example',
+     x_axis_label='x',
+     y_axis_label='y')
+
+p.line(x, y, legend_label='Trend', line_width=2)
+
+st.bokeh_chart(p, use_container_width=True)
