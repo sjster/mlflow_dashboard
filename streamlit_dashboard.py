@@ -19,6 +19,11 @@ def get_mlflow_metrics():
         m = json.load(f)
     return(m)
 
+def get_contributors():
+    with open('data/contributors.json','r') as f:
+        data = json.load(f)
+    return(data['login'])
+
 def get_phrases():
     with open('data/nounphrase_dict.json','r') as f:
         nounphrases = json.load(f)
@@ -49,6 +54,7 @@ df = pd.read_json('data/processed_issues_entities.json')
 df = process_pull_requests(df)
 mlflow_metrics = get_mlflow_metrics()
 nounphrases_df, verbphrases_df = get_phrases()
+contributors = get_contributors()
 
 st.title("GitHub stats for MLflow")
 st.subheader("All issues ")
@@ -68,7 +74,7 @@ print("Slider values ",date_vals[0])
 df = df[df['created_at'] > date_vals[0]]
 
 # ------------------- Metrics ----------------- #
-col_metric1, col_metric2, col_metric3, col_metric4 = st.columns([1,1,1,1])
+col_metric1, col_metric2, col_metric3, col_metric4, col_metric5 = st.columns([1,1,1,1,1])
 with col_metric1:
     st.metric('Number of issues',len(df))
 
@@ -80,6 +86,9 @@ with col_metric3:
 
 with col_metric4:
     st.metric('Watchers',mlflow_metrics['watchers'])
+
+with col_metric5:
+    st.metric('Contributors',len(contributors))
 
 # -------------------- Bugs, issues, enhancements, comments over time ------------------ #
 col_bugs, col_issues = st.columns([1,1])
