@@ -47,4 +47,7 @@ print(verbphrase_dict)
 with open('data/nounphrase_dict.json', 'w') as f:
     json.dump(dict(nounphrase_dict),f)
 
+with open('data/verbphrase_dict.json', 'w') as f:
+    json.dump(dict(verbphrase_dict),f)
+
 print("Total time ",time.time() - t0)

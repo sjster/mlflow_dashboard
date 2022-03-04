@@ -19,6 +19,17 @@ def get_mlflow_metrics():
         m = json.load(f)
     return(m)
 
+def get_phrases():
+    with open('data/nounphrase_dict.json','r') as f:
+        nounphrases = json.load(f)
+    with open('data/verbphrase_dict.json','r') as f:
+        verbphrases = json.load(f)
+    nounphrases_df = pd.Series(nounphrases)
+    nounphrases_df.sort_values(inplace=True, ascending=False)
+    verbphrases_df = pd.Series(verbphrases)
+    verbphrases_df.sort_values(inplace=True, ascending=False)
+    return(nounphrases_df, verbphrases_df)
+
 def resample_based_on_label(val):
     vals_over_time = labels_exploded[labels_exploded['labels'] == val][['created_at', 'labels']]
     vals_over_time_resampled = vals_over_time.set_index('created_at').resample(AGGREGATION_PERIOD).count()
@@ -37,6 +48,7 @@ AGGREGATION_PERIOD = 'M'
 df = pd.read_json('data/processed_issues_entities.json')
 df = process_pull_requests(df)
 mlflow_metrics = get_mlflow_metrics()
+nounphrases_df, verbphrases_df = get_phrases()
 
 st.title("GitHub stats for MLflow")
 st.subheader("All issues ")
@@ -75,10 +87,10 @@ col_bugs, col_issues = st.columns([1,1])
 with col_issues:
     issues_by_week = df.set_index('created_at').resample(AGGREGATION_PERIOD).count()['id']
     issues_by_week.rename('Issues', inplace=True)
-    fig = px.area(issues_by_week, title='Number of issues and comments by month')
+    fig = px.line(issues_by_week, title='Number of issues and comments by month')
 
     comments_by_week = df.set_index('created_at').resample(AGGREGATION_PERIOD).agg({'comments': 'sum'})
-    fig2 = px.area(comments_by_week, title='Number of comments by month')
+    fig2 = px.line(comments_by_week, title='Number of comments by month')
     fig.add_trace(fig2['data'][0])
     fig['data'][0].line.color = 'red'
     st.plotly_chart(fig)
@@ -143,16 +155,14 @@ with col_dataframe:
     st.dataframe(entities_count, height=1200)
 
 
-from bokeh.plotting import figure
+col_noun, col_verb = st.columns([1,1])
 
-x = [1, 2, 3, 4, 5]
-y = [6, 7, 2, 4, 5]
+with col_noun:
+    st.text('Noun phrases in title')
+    st.plotly_chart(px.bar(nounphrases_df.iloc[0:70], orientation='h').
+                        update_layout(width=800, height=1200,  yaxis={'categoryorder':'total ascending'}))
 
-p = figure(
-     title='simple line example',
-     x_axis_label='x',
-     y_axis_label='y')
-
-p.line(x, y, legend_label='Trend', line_width=2)
-
-st.bokeh_chart(p, use_container_width=True)
+with col_verb:
+    st.text('Verb phrases in title')
+    st.plotly_chart(px.bar(verbphrases_df.iloc[0:70], orientation='h').
+                        update_layout(width=800, height=1200,  yaxis={'categoryorder':'total ascending'}))
