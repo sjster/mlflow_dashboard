@@ -52,6 +52,7 @@ def resample_match_label_pattern(val):
 AGGREGATION_PERIOD = 'M'
 df = pd.read_json('data/processed_issues_entities.json')
 df = process_pull_requests(df)
+print(df.head())
 mlflow_metrics = get_mlflow_metrics()
 nounphrases_df, verbphrases_df = get_phrases()
 contributors = get_contributors()
@@ -137,12 +138,12 @@ with col3:
 
 # ---------------------- Histogram of issue labels and comments -------------------- #
 
-st.subheader('Distribution of labels and comments')
+st.subheader('Count of labels and distribution of comments')
 col_labels, col_hist = st.columns([1,1])
 
 with col_labels:
     label_count = df.explode('labels')['labels'].value_counts()
-    st.plotly_chart(px.bar(label_count, title='Distribution of issue labels') )
+    st.plotly_chart(px.bar(label_count, title='Count of issue labels') )
 
 with col_hist:
     comments_hist = px.histogram(df, 'comments', title="Distribution of comments")
