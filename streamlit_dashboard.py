@@ -24,6 +24,10 @@ def get_contributors():
         data = json.load(f)
     return(data['login'])
 
+def get_time_to_first_comment():
+    df = pd.read_json('data/comment_first_response.json')
+    return(df)
+
 def get_phrases():
     with open('data/nounphrase_dict.json','r') as f:
         nounphrases = json.load(f)
@@ -56,6 +60,7 @@ print(df.head())
 mlflow_metrics = get_mlflow_metrics()
 nounphrases_df, verbphrases_df = get_phrases()
 contributors = get_contributors()
+issue_first_comment = get_time_to_first_comment()
 
 st.title("GitHub stats for MLflow")
 st.subheader("All issues ")
@@ -108,6 +113,32 @@ with col_issues:
 labels_exploded = df.explode('labels')[['created_at','labels','entities']]
 with col_bugs:
     fig = px.area(resample_based_on_label('bug'), title="Bug/enhancements/integrations by month")
+    fig2 = px.area(resample_based_on_label('enhancement'), title="Bugs over time")
+    fig3 = px.area(resample_match_label_pattern('integration'))
+    fig4 = px.area(resample_based_on_label('rn/bug-fix'), title="Bug fixes over time")
+    fig.add_trace(fig2['data'][0])
+    fig.add_trace(fig3['data'][0])
+    fig.add_trace(fig4['data'][0])
+    fig['data'][0].line.color ='red'
+    fig['data'][1].line.color = 'green'
+    fig['data'][2].line.color = 'cyan'
+    st.plotly_chart(fig)
+
+# ------------------- Issue time to first response over time --------------------#
+
+col_mean_median, col_x = st.columns([1,1])
+
+with col_mean_median:
+
+    fig = px.line(issue_first_comment['time_first_response_mean'], title='Time to first response (days)')
+    fig2 = px.line(issue_first_comment['time_first_response_median'], title='Time to first response')
+    fig.add_trace(fig2['data'][0])
+    fig['data'][0].line.color = 'red'
+    st.plotly_chart(fig)
+
+labels_exploded = df.explode('labels')[['created_at','labels','entities']]
+with col_x:
+    fig = px.area(resample_based_on_label('bug'), title="PLACEHOLDER - IGNORE")
     fig2 = px.area(resample_based_on_label('enhancement'), title="Bugs over time")
     fig3 = px.area(resample_match_label_pattern('integration'))
     fig4 = px.area(resample_based_on_label('rn/bug-fix'), title="Bug fixes over time")
