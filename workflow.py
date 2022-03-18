@@ -10,10 +10,11 @@ import compute_issue_comment_stats
 import os
 
 class ForeachFlow(FlowSpec):
+    infrastructure = Parameter('infra', help='select databricks or local', default='local')
 
     @step
     def start(self):
-        print("Starting workflow")
+        print("Starting workflow on ",self.infrastructure)
         self.next(self.get_metadata_step)
 
     @step
