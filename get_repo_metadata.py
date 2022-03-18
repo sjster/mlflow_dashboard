@@ -1,12 +1,18 @@
 import pandas as pd
 import json
 import requests
+import read_credentials
 
+def get_metadata(credentials_path=None, query_url = 'https://api.github.com/repos/mlflow/mlflow'):
 
-def get_metadata(query_url = 'https://api.github.com/repos/mlflow/mlflow'):
+    params = {"page": "1", "per_page": "100"}
+    headers = {"Accept": "application/vnd.github.v3+json"}
+    TOKEN = read_credentials.get_credentials(credentials_path)
+    auth = ('sjster', TOKEN)
 
-    r = requests.get(query_url)
+    r = requests.get(query_url, headers=headers, params=params, auth=auth)
     repo_data = r.json()
+
     if(r.status_code == 200):
         print(repo_data['created_at'])
         print(repo_data['updated_at'])
@@ -27,11 +33,12 @@ def get_metadata(query_url = 'https://api.github.com/repos/mlflow/mlflow'):
 
         return_val = 0
     else:
+        reason = r.reason
         return_val = r.status_code
-        print('Request failed with error ',return_val)
+        print(f'Request failed with error {return_val} with {reason}')
 
     return(return_val)
 
 
 if __name__ == '__main__':
-    return_val = get_metadata()
+    return_val = get_metadata(credentials_path)

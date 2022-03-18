@@ -3,17 +3,12 @@ import requests
 import pickle
 import configparser
 import os
+import read_credentials
 
 TOKEN = 0
 
-
-def get_credentials():
-        global TOKEN
-        config = configparser.RawConfigParser()
-        path = os.path.join(os.path.expanduser('~'), '.github/credentials')
-        config.read(path)
-        token_read = config.get('default', 'personal_access_token')
-        TOKEN = token_read
+def get_credentials(credentials_path):
+        TOKEN = read_credentials.get_credentials(credentials_path)
 
 def get_requests(timeline_url):
     params = {"page": "1", "per_page": "100"}
@@ -28,10 +23,13 @@ def get_requests(timeline_url):
     else:
         return(None)
 
-def get_issue_comments():
-    get_credentials()
+def get_issue_comments(credentials_path, TEST=False):
+    get_credentials(credentials_path)
     df = pd.read_json('data/ingestion_issues.json')
     df_with_comments = df[df['comments'] > 0]
+    if(TEST):
+        df_with_comments = df_with_comments[0:5]
+    print('Number of issues with comments ',len(df_with_comments))
 
     #df_with_comments['comments_history'] = df_with_comments['timeline_url'].apply(lambda x: get_requests(x))
     #df_with_comments[['number','id','comments_history']].to_json('comments_history.json')
@@ -47,7 +45,7 @@ def get_issue_comments():
             print('Length of list ',len(comments_list))
             with open('data/comments_list.txt','wb') as f:
                 pickle.dump(comments_list, f)
-            retun('INCOMPLETE_DATA')
+            return(1)
 
     print("Done")
     with open('data/comments_list.txt','wb') as f:
@@ -57,4 +55,4 @@ def get_issue_comments():
 
 
 if __name__ == '__main__':
-    return_val = get_issue_comments()
+    return_val = get_issue_comments(credentials_path)

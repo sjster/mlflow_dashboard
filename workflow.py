@@ -1,4 +1,4 @@
-from metaflow import FlowSpec, Parameter, step 
+from metaflow import FlowSpec, Parameter, step
 import get_repo_metadata
 import get_issues
 import process_ingested_data
@@ -11,6 +11,7 @@ import os
 
 class ForeachFlow(FlowSpec):
     infrastructure = Parameter('infra', help='select databricks or local', default='local')
+    credentials_path = Parameter('credentials', help='path to credentials file', default='~/.github/credentials')
 
     @step
     def start(self):
@@ -19,19 +20,19 @@ class ForeachFlow(FlowSpec):
 
     @step
     def get_metadata_step(self):
-        res = get_repo_metadata.get_metadata()
+        res = get_repo_metadata.get_metadata(credentials_path)
         print('Job status from metadata ingestion ',res)
         self.next(self.get_contributors_step)
 
     @step
     def get_contributors_step(self):
-        res = get_contributors.get_contributors()
+        res = get_contributors.get_contributors(credentials_path)
         print('Job status from get contributors ',res)
         self.next(self.get_issues_step)
 
     @step
     def get_issues_step(self):
-        res = get_issues.get_github_issues()
+        res = get_issues.get_github_issues(credentials_path)
         print('Job status from GitHub issues ingestion step ',res)
         self.next(self.process_ingested_data_step)
 
@@ -55,7 +56,7 @@ class ForeachFlow(FlowSpec):
 
     @step
     def get_issue_comments_step(self, inputs):
-        res = get_issue_comments.get_issue_comments()
+        res = get_issue_comments.get_issue_comments(credentials_path)
         print('Job status from issue comments ingestion ',res)
         self.next(self.compute_issue_comment_stats_step)
 
