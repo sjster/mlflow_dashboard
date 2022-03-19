@@ -6,6 +6,7 @@ import extract_entities
 import extract_phrase_chunks
 import get_contributors
 import get_issue_comments
+import read_credentials
 import compute_issue_comment_stats
 import os
 
@@ -17,6 +18,7 @@ class ForeachFlow(FlowSpec):
     @step
     def start(self):
         print(f"Starting workflow on {self.infrastructure} with credentials from {self.credentials_path}")
+        read_credentials.get_credentials(self.credentials_path)
         self.next(self.get_issue_comments_step)
 
     @step
