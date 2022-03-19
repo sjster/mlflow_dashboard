@@ -46,28 +46,16 @@ class ForeachFlow(FlowSpec):
     def extract_entities_step(self):
         res = extract_entities.extract()
         print('Job status from extract entities step ',res)
-        self.next(self.get_issue_comments_step)
+        self.next(self.end)
 
     @step
     def extract_phrase_chunks_step(self):
         res = extract_phrase_chunks.extract()
         print('Job status from extract phrase chunks step',res)
-        self.next(self.get_issue_comments_step)
-
-    @step
-    def get_issue_comments_step(self, inputs):
-        res = get_issue_comments.get_issue_comments(self.credentials_path)
-        print('Job status from issue comments ingestion ',res)
-        self.next(self.compute_issue_comment_stats_step)
-
-    @step
-    def compute_issue_comment_stats_step(self):
-        res = compute_issue_comment_stats.compute_stats()
-        print('Job status from comment stats ',res)
         self.next(self.end)
 
     @step
-    def end(self):
+    def end(self, inputs):
         print("Done")
 
 if __name__ == '__main__':
