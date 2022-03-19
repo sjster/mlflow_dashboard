@@ -9,7 +9,7 @@ def call_rest_api(i, query_url, headers, params, auth):
     r = requests.get(query_url, headers=headers, params=params, auth=auth)
     if(r.status_code != 403):
         return(r)
-    else
+    else:
         raise Exception('API limit reached')
 
 def get_contributors(credentials_path=None, TEST=False):

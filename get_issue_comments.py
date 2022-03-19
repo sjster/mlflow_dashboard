@@ -18,7 +18,6 @@ def get_requests(timeline_url):
 
     r = requests.get(timeline_url, headers=headers, params=params, auth=auth)
     if(r.status_code != 403 and r.json != []):
-        print(r.json())
         df = pd.DataFrame.from_records(r.json())
         if('created_at' in df.columns):
             ret_data = {'comment_dates': df['created_at'].values, 'comment_events': df['event'].values}
@@ -42,6 +41,7 @@ def get_issue_comments(credentials_path, TEST=False):
     # ISSUES - SCALABILITY - this method is unlikely to scale because of timeout issues and API rate limits
     comments_list = []
     for index, elem in df_with_comments.iterrows():
+        print('Row ',index)
         try:
             ret_value = get_requests(elem['timeline_url'])
             comments_list.append((elem['number'], elem['id'], elem['created_at'], ret_value))
