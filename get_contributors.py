@@ -5,12 +5,12 @@ import json
 import read_credentials
 
 def call_rest_api(i, query_url, headers, params, auth):
-    try:
-        params["page"] = str(i)
-        r = requests.get(query_url, headers=headers, params=params, auth=auth)
-        return(r, True)
-    except:
-        return(r, False)
+    params["page"] = str(i)
+    r = requests.get(query_url, headers=headers, params=params, auth=auth)
+    if(r.status_code != 403):
+        return(r)
+    else
+        raise Exception('API limit reached')
 
 def get_contributors(credentials_path=None, TEST=False):
     query_url = f"https://api.github.com/repos/mlflow/mlflow/contributors"
@@ -25,8 +25,8 @@ def get_contributors(credentials_path=None, TEST=False):
 
     while(not DONE):
         r = call_rest_api(i, query_url, headers, params, auth)
-        if(r[1]):
-            json_list.extend(r[0].json())
+        if(r.json() != []):
+            json_list.extend(r.json())
             i = i + 1
             print("Page ",i)
             if(TEST):
@@ -40,8 +40,8 @@ def get_contributors(credentials_path=None, TEST=False):
         print('Contributors ',len(df))
         return_val = 0
     else:
-        reason = r[0].reason
-        return_val = r[0].status_code
+        reason = r.reason
+        return_val = r.status_code
         print(f'No issues returned from ingestion with {return_val} and reason {reason}')
 
     return(return_val)

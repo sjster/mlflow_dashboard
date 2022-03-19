@@ -15,24 +15,24 @@ class ForeachFlow(FlowSpec):
 
     @step
     def start(self):
-        print("Starting workflow on ",self.infrastructure)
+        print(f"Starting workflow on {self.infrastructure} with credentials from {self.credentials_path}")
         self.next(self.get_metadata_step)
 
     @step
     def get_metadata_step(self):
-        res = get_repo_metadata.get_metadata(credentials_path)
+        res = get_repo_metadata.get_metadata(self.credentials_path)
         print('Job status from metadata ingestion ',res)
         self.next(self.get_contributors_step)
 
     @step
     def get_contributors_step(self):
-        res = get_contributors.get_contributors(credentials_path)
+        res = get_contributors.get_contributors(self.credentials_path)
         print('Job status from get contributors ',res)
         self.next(self.get_issues_step)
 
     @step
     def get_issues_step(self):
-        res = get_issues.get_github_issues(credentials_path)
+        res = get_issues.get_github_issues(self.credentials_path)
         print('Job status from GitHub issues ingestion step ',res)
         self.next(self.process_ingested_data_step)
 
@@ -56,8 +56,10 @@ class ForeachFlow(FlowSpec):
 
     @step
     def get_issue_comments_step(self, inputs):
-        res = get_issue_comments.get_issue_comments(credentials_path)
+        res = get_issue_comments.get_issue_comments(self.credentials_path)
         print('Job status from issue comments ingestion ',res)
+        if(res != 0):
+            exit(0)
         self.next(self.compute_issue_comment_stats_step)
 
     @step

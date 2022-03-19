@@ -11,17 +11,22 @@ def get_credentials(credentials_path):
         TOKEN = read_credentials.get_credentials(credentials_path)
 
 def get_requests(timeline_url):
+    global TOKEN
     params = {"page": "1", "per_page": "100"}
     headers = {"Accept": "application/vnd.github.v3+json"}
     auth = ('sjster', TOKEN)
 
     r = requests.get(timeline_url, headers=headers, params=params, auth=auth)
-    df = pd.DataFrame.from_records(r.json())
-    if('created_at' in df.columns):
-        ret_data = {'comment_dates': df['created_at'].values, 'comment_events': df['event'].values}
-        return(ret_data)
+    if(r.status_code != 403 and r.json != []):
+        print(r.json())
+        df = pd.DataFrame.from_records(r.json())
+        if('created_at' in df.columns):
+            ret_data = {'comment_dates': df['created_at'].values, 'comment_events': df['event'].values}
+            return(ret_data)
+        else:
+            return(None)
     else:
-        return(None)
+        raise Exception('API limit reached')
 
 def get_issue_comments(credentials_path, TEST=False):
     get_credentials(credentials_path)
@@ -40,12 +45,12 @@ def get_issue_comments(credentials_path, TEST=False):
         try:
             ret_value = get_requests(elem['timeline_url'])
             comments_list.append((elem['number'], elem['id'], elem['created_at'], ret_value))
-        except e:
+        except Exception as e:
             print('Exception ',e)
             print('Length of list ',len(comments_list))
             with open('data/comments_list.txt','wb') as f:
                 pickle.dump(comments_list, f)
-            return(1)
+            raise Exception(e)
 
     print("Done")
     with open('data/comments_list.txt','wb') as f:
