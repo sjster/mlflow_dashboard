@@ -12,11 +12,11 @@ python workflow.py show
 
 #### Run the workflow
 
-python workflow.py run --infra ['databricks'|'local'] 
+python workflow.py run --infra ['databricks'|'local'] --credential '.github/credentials' 
 
 #### Resume a workflow
 
-python workflow.py run --resume
+python workflow.py resume
 
 #### Generate workflow graph from metaflow using 
 

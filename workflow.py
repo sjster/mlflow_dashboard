@@ -58,8 +58,6 @@ class ForeachFlow(FlowSpec):
     def get_issue_comments_step(self, inputs):
         res = get_issue_comments.get_issue_comments(self.credentials_path)
         print('Job status from issue comments ingestion ',res)
-        if(res != 0):
-            exit(0)
         self.next(self.compute_issue_comment_stats_step)
 
     @step
