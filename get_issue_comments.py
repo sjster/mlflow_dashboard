@@ -48,8 +48,10 @@ def get_issue_comments(credentials_path, TEST=False):
         except Exception as e:
             print('Exception ',e)
             print('Length of list ',len(comments_list))
-            with open('data/comments_list.txt','wb') as f:
-                pickle.dump(comments_list, f)
+            if(len(comments_list) > 0):
+                print('Writing out file for comments')
+                with open('data/comments_list.txt','wb') as f:
+                    pickle.dump(comments_list, f)
             raise Exception(e)
 
     print("Done")
