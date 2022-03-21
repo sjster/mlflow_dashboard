@@ -5,18 +5,23 @@ import configparser
 import os
 import read_credentials
 
-TOKEN = 0
-
 def get_credentials(credentials_path):
         TOKEN = read_credentials.get_credentials(credentials_path)
+        print('Token is ',TOKEN)
+        return(TOKEN)
 
-def get_requests(timeline_url):
-    global TOKEN
+
+def get_request_data(credentials_path):
+    TOKEN = get_credentials(credentials_path)
     params = {"page": "1", "per_page": "100"}
     headers = {"Accept": "application/vnd.github.v3+json"}
     auth = ('sjster', TOKEN)
+    return(headers, params, auth)
 
+
+def get_requests(timeline_url, headers, params, auth):
     r = requests.get(timeline_url, headers=headers, params=params, auth=auth)
+    print('Rate limit info - remaining ', r.headers['X-RateLimit-Remaining'])
     if(r.status_code != 403 and r.json != []):
         df = pd.DataFrame.from_records(r.json())
         if('created_at' in df.columns):
@@ -25,10 +30,13 @@ def get_requests(timeline_url):
         else:
             return(None)
     else:
+        print('Status code ', r.status_code)
         raise Exception('API limit reached')
 
+
 def get_issue_comments(credentials_path, TEST=False):
-    get_credentials(credentials_path)
+    headers, params, auth = get_request_data(credentials_path)
+
     df = pd.read_json('data/ingestion_issues.json')
     df_with_comments = df[df['comments'] > 0]
     if(TEST):
@@ -43,7 +51,7 @@ def get_issue_comments(credentials_path, TEST=False):
     for index, elem in df_with_comments.iterrows():
         print('Row ',index)
         try:
-            ret_value = get_requests(elem['timeline_url'])
+            ret_value = get_requests(elem['timeline_url'], headers, params, auth)
             comments_list.append((elem['number'], elem['id'], elem['created_at'], ret_value))
         except Exception as e:
             print('Exception ',e)

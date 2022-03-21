@@ -13,11 +13,13 @@ import os
 class ForeachFlow(FlowSpec):
     infrastructure = Parameter('infra', help='select databricks or local', default='local')
     credentials_path = Parameter('credentials', help='path to credentials file', default='~/.github/credentials')
+    user = Parameter('user', help='GitHub authenticated user', default='sjster')
 
     @step
     def start(self):
         print(f"Starting workflow on {self.infrastructure} with credentials from {self.credentials_path}")
         read_credentials.get_credentials(self.credentials_path)
+        read_credentials.test_rate_limiting(self.credentials_path, self.user)
         self.next(self.get_metadata_step)
 
     @step
@@ -48,16 +50,29 @@ class ForeachFlow(FlowSpec):
     def extract_entities_step(self):
         res = extract_entities.extract()
         print('Job status from extract entities step ',res)
-        self.next(self.end)
+        self.next(self.get_issue_comments_step)
 
     @step
     def extract_phrase_chunks_step(self):
         res = extract_phrase_chunks.extract()
         print('Job status from extract phrase chunks step',res)
+        self.next(self.get_issue_comments_step)
+
+    @step
+    def get_issue_comments_step(self, inputs):
+        read_credentials.test_rate_limiting(self.credentials_path, self.user)
+        res = get_issue_comments.get_issue_comments(self.credentials_path, TEST=False)
+        print('Job status from issue comments ingestion ',res)
+        self.next(self.compute_issue_comment_stats_step)
+
+    @step
+    def compute_issue_comment_stats_step(self):
+        res = compute_issue_comment_stats.compute_stats()
+        print('Job status from comment stats ',res)
         self.next(self.end)
 
     @step
-    def end(self, inputs):
+    def end(self):
         print("Done")
 
 if __name__ == '__main__':

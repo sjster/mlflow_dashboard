@@ -25,3 +25,15 @@ python workflow.py output-dot | dot -Tpng -o graph.png
 #### Run metaflow check to make sure that the flow works
 	
 python workflow.py check
+
+#### OAuth authentication 
+
+Use the following syntax for authenticating with the personal authentication token
+
+curl -i -u sjster https://api.github.com/users/octocat
+
+Enter personal authentication token when prompted
+
+Or provide it on the same line as 
+
+curl -i -u "sjster:TOKEN" https://api.github.com/users/octocat

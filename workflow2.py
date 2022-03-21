@@ -14,16 +14,18 @@ import os
 class ForeachFlow(FlowSpec):
     infrastructure = Parameter('infra', help='select databricks or local', default='local')
     credentials_path = Parameter('credentials', help='path to credentials file', default='~/.github/credentials')
+    user = Parameter('user', help='GitHub authenticated user', default='sjster')
 
     @step
     def start(self):
         print(f"Starting workflow on {self.infrastructure} with credentials from {self.credentials_path}")
         read_credentials.get_credentials(self.credentials_path)
+        read_credentials.test_rate_limiting(self.credentials_path, self.user)
         self.next(self.get_issue_comments_step)
 
     @step
     def get_issue_comments_step(self):
-        res = get_issue_comments.get_issue_comments(self.credentials_path)
+        res = get_issue_comments.get_issue_comments(self.credentials_path, TEST=True)
         print('Job status from issue comments ingestion ',res)
         self.next(self.compute_issue_comment_stats_step)
 
