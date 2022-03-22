@@ -20,7 +20,7 @@ def extract():
     df = pd.read_json('data/processed_issues.json')
     df['title'] = df['title'].str.lower()
     df['entities'] = df['title'].apply(lambda x: apply_flair(x))
-    df.to_json('data/processed_issues_entities.json')
+    df.to_json('data/processed_issues_entities.json', orient='records')
     print(df['entities'])
 
     print("Total time ",time.time() - t0)

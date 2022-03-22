@@ -28,7 +28,7 @@ def compute_stats():
     grouped_df_median = df[['issue_date','time_first_response']].set_index('issue_date').resample('M').median()
     grouped_df_mean = df[['issue_date','time_first_response']].set_index('issue_date').resample('M').mean()
     joined_df = grouped_df_mean.join(grouped_df_median, lsuffix='_mean', rsuffix='_median')
-    joined_df.to_json('data/comment_first_response.json')
+    joined_df.to_json('data/comment_first_response.json', orient='records')
     print('Written time to first response file ',len(joined_df))
     return(0)
 

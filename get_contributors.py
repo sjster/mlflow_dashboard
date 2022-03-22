@@ -36,7 +36,7 @@ def get_contributors(credentials_path=None, TEST=False):
 
     df = pd.DataFrame.from_records(json_list)
     if(len(df) != 0):
-        df.to_json("data/contributors.json")
+        df.to_json("data/contributors.json", orient='records')
         print('Contributors ',len(df))
         return_val = 0
     else:

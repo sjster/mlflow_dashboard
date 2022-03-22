@@ -20,7 +20,7 @@ def get_creds():
 
 @pytest.fixture(scope='module')
 def get_creds_path():
-    yield '.github/credentials'
+    yield '/Users/srijith.rajamohan/.github/credentials'
 
 def test_get_creds():
     token = read_credentials.get_credentials()

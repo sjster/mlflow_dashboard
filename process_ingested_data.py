@@ -8,7 +8,7 @@ def process():
     df_processed['labels'] = df['labels'].apply(lambda x: [elem['name'] for elem in x])
     df_processed['labels_description'] = df['labels'].apply(lambda x: [elem['description'] for elem in x])
 
-    df_processed.to_json('data/processed_issues.json')
+    df_processed.to_json('data/processed_issues.json', orient='records')
     return(0)
 
 if __name__ == '__main__':

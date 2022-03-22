@@ -38,7 +38,7 @@ def get_github_issues(credentials_path=None, TEST=False):
 
     df = pd.DataFrame.from_records(json_list)
     if(len(df) != 0):
-        df.to_json("data/ingestion_issues.json")
+        df.to_json("data/ingestion_issues.json", orient='records')
         print('Issues returned from data ingestion',len(df))
         return_val = 0
     else:
