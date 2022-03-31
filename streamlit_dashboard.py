@@ -1,3 +1,4 @@
+import pprint
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -22,7 +23,7 @@ def get_mlflow_metrics():
 def get_contributors():
     with open('data/contributors.json','r') as f:
         data = json.load(f)
-    return(data['login'])
+    return(data)
 
 def get_time_to_first_comment():
     df = pd.read_json('data/comment_first_response.json')

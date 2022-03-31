@@ -6,6 +6,10 @@
 
 ### Usage 
 
+#### Run the streamlit app locally
+
+streamlit run streamlit_dashboard.py
+
 #### Show the workflow steps
 
 python workflow.py show
